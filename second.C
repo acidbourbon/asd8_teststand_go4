@@ -357,7 +357,7 @@ class SecondProc : public base::EventProc {
                   FillH2(potato_h[i],t1_vs_ref ,tot[i]*1e9);
                   FillH1(t1_h[i],t1_vs_ref );
                   
-//                   if( (i != REFCHAN_A) && (i != REFCHAN_B) ) {
+                  if( i != 0 ) {
                     FillH2(meta_potato_h,t1_vs_ref,tot[i]*1e9);
                     FillH1(meta_tot_h,tot[i]*1e9);
                     FillH1(meta_t1_h,t1_vs_ref );
@@ -367,7 +367,7 @@ class SecondProc : public base::EventProc {
                     entry_t1 = t1_vs_ref;
                     entry_tot = tot[i]*1e9;
 //                     data_tree[fTdcId]->Fill();
-//                   }
+                  }
                   
                   // efficiency estimation ... this cell, cell #i, is a reference detector
 //                   ref_counts[i]++; // count up reference counts
@@ -379,11 +379,7 @@ class SecondProc : public base::EventProc {
  
         
         for (int i = 0 ; i<CHANNELS; i++) {
-//           ((TH1F*) ref_counts_h)->SetBinContent(i+1,ref_counts[i]);
-//           ((TH1F*) dut_counts_h)->SetBinContent(i+1,dut_counts[i]);
-//           if( is_dut[i] && (ref_counts[i] > 0)){
-//             ((TH1F*) efficiency_h)->SetBinContent(i+1,((float) dut_counts[i])/((float) ref_counts[i]));
-//           }
+            ((TH1F*) efficiency_h)->SetBinContent(i+1,((float) (((TH1F*) t1_h[i])->GetEntries()) )/((float) (((TH1F*) t1_h[0])->GetEntries())));
         }
         
         
