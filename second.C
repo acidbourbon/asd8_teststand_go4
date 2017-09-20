@@ -17,7 +17,7 @@
 #include "base/Event.h"
 #include "hadaq/TdcSubEvent.h"
 
-#define CHANNELS 32
+#define CHANNELS 33
 #define FISHES   16
 #define REFCHAN_A 0
 #define REFCHAN_B 0
@@ -36,10 +36,11 @@
 #define t1_R 100 // EE
 //#define tot_L -10
 //#define tot_R 500
-#define tot_L -10 // HZDR
-#define tot_R 1000 // HZDR
+#define tot_L -10 // EE
+#define tot_R 200 // EE
 
-#define ref_channel_offset -75 //ns fine measured ref channel relative to coarse measured cts trigger channel
+// #define ref_channel_offset -75 //ns fine measured ref channel relative to coarse measured cts trigger channel
+#define ref_channel_offset 0 //ns fine measured ref channel relative to coarse measured cts trigger channel
 
 // in the first iteration, scanning through data in the coincidence window, rejecting hits (fuzzy edges)
 
@@ -65,11 +66,11 @@
 
 //#define t1_accept_L (-250 + ref_channel_offset) //ns // GSI Dlab
 //#define t1_accept_L (-1000000 + ref_channel_offset) //ns // HZDR fe55
-#define t1_accept_L (-100 + ref_channel_offset) //ns // HZDR 
+#define t1_accept_L (-80 + ref_channel_offset) //ns // EE
 //#define t1_accept_L (-150 + ref_channel_offset) //ns // Muentz-Torte
 //#define t1_accept_R (100 + ref_channel_offset)//ns // GSI Dlab
 //#define t1_accept_R (1000000 + ref_channel_offset)//ns // HZDR fe55
-#define t1_accept_R (100 + ref_channel_offset)//ns // HZDR
+#define t1_accept_R (-40 + ref_channel_offset)//ns // EE
 // #define t1_accept_R (-130 + ref_channel_offset)//ns // Muentz-Torte
 // #define t1_accept_R (-90 + ref_channel_offset)//ns // ASD8 with thr 0x52
 
@@ -248,18 +249,18 @@ class SecondProc : public base::EventProc {
         static float effective_spike_rejection = from_env("spike_rejection", TString::Itoa(spike_rejection,10) ).Atof();
         
         
-        static int ref_counts[CHANNELS];
-        static int dut_counts[CHANNELS];
-        static bool is_dut[CHANNELS];
+//         static int ref_counts[CHANNELS];
+//         static int dut_counts[CHANNELS];
+//         static bool is_dut[CHANNELS];
         
         
         // this is only run once --
         static bool is_initialized=false;
         if(not(is_initialized)){
           for( int i = 0; i<31; i++){
-            ref_counts[i] = 0;
-            dut_counts[i] = 0;
-            is_dut[i] = false;
+//             ref_counts[i] = 0;
+//             dut_counts[i] = 0;
+//             is_dut[i] = false;
 //             if((overlaps[i][0] >= 0) && (overlaps[i][1] >= 0)){
 //               is_dut[i] = true;
 //             }
@@ -292,27 +293,28 @@ class SecondProc : public base::EventProc {
             const hadaq::TdcMessageExt& ext = sub->msg(cnt);
 
             unsigned chid = ext.msg().getHitChannel();
-//             unsigned time = ext.msg().getHitTmFine();
-//           bool rising   = not(ext.msg().isHitRisingEdge()); // use this line for falling edge first/negative pulses
            bool rising   = ext.msg().isHitRisingEdge(); // use this line for rising edge first/positive pulses
-//            if((chid) == 8) {
-//		    // positive polarity only for trigger input
-//		    rising   = ext.msg().isHitRisingEdge(); // use this line for rising edge first/positive pulses
-//	    }
-//             printf("message, ch %d\n",(chid));
             
-            if (chid==0) { ch0tm = ext.GetGlobalTime(); continue; }
+            if (chid==0) {
+              ch0tm = ext.GetGlobalTime();
+              got_real_hit[chid] = true;
+              t1[chid] = 0;
+              tot[chid] = 100e-9;
+              continue;
+              
+            }
+            
 
             // full time
-            double tm = ext.GetGlobalTime() + ch0tm;
+            double tm = ext.GetGlobalTime();
             if((chid) >= CHANNELS) {continue;} // channel out of range of analysis
             if(rising){
               
               
-                if((( ((tm - ch0tm)*1e9) > t1_accept_L) && (((tm - ch0tm)*1e9) < t1_accept_R ))  ) { // this condition sets another coincidence window, except for REFCHAN_A
+                if((( ((tm)*1e9) > t1_accept_L) && (((tm)*1e9) < t1_accept_R ))  ) { // this condition sets another coincidence window, except for REFCHAN_A
                   got_rising[chid] = true;
                   got_falling[chid] = false;
-                  t1_candidate[chid] = tm - ch0tm;
+                  t1_candidate[chid] = tm;
                 }
 //               }
             }else{ // if falling edge
@@ -320,7 +322,7 @@ class SecondProc : public base::EventProc {
               if(got_rising[chid]){
                 if(not(got_falling[chid])){
                   got_falling[chid] = true;
-                  t2_candidate[chid] = tm - ch0tm;
+                  t2_candidate[chid] = tm;
                   Double_t candidate_tot_ns = (t2_candidate[chid] - t1_candidate[chid])*1e9;
                   
                   if( candidate_tot_ns > effective_spike_rejection  ){
