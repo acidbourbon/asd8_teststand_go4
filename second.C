@@ -196,16 +196,19 @@ class SecondProc : public base::EventProc {
         }
         
         meta_t1_h = MakeH1("meta_t1","meta_t1", 2000, t1_L, t1_R, "ns");
-        meta_t1_2d = MakeH2("meta_t1_2d","meta_t1_2d", 2000, t1_L, t1_R,CHANNELS,-0.5,CHANNELS-0.5, "ns;channel#");
+        meta_t1_2d = MakeH2("meta_t1_2d","meta_t1_2d", 2000, t1_L, t1_R,CHANNELS-1,0.5,CHANNELS-0.5, "ns;channel#");
         meta_tot_h = MakeH1("meta_tot","meta_tot", 4000, tot_L, tot_R, "ns");
-        meta_tot_2d = MakeH2("meta_tot_2d","meta_tot_2d", 2000, tot_L, tot_R,CHANNELS,-0.5,CHANNELS-0.5, "ns;channel#");
+        meta_tot_2d = MakeH2("meta_tot_2d","meta_tot_2d", 2000, tot_L, tot_R,CHANNELS-1,0.5,CHANNELS-0.5, "ns;channel#");
         meta_potato_h = MakeH2("meta_potato","meta_potato",500,t1_L,t1_R,500, tot_L, tot_R, "t1 (ns);tot (ns)");
         
 //         evt_no = 0;
         
-        ref_counts_h = MakeH1("ref_counts","ref_counts", CHANNELS, -0.5, CHANNELS-0.5, "channel #");
-        dut_counts_h = MakeH1("dut_counts","dut_counts", CHANNELS, -0.5, CHANNELS-0.5, "channel #");
-        efficiency_h = MakeH1("efficiency","efficiency", CHANNELS, -0.5, CHANNELS-0.5, "channel #;kind:F");
+//         ref_counts_h = MakeH1("ref_counts","ref_counts", CHANNELS -1, 0.5, CHANNELS-0.5, "channel #");
+//         dut_counts_h = MakeH1("dut_counts","dut_counts", CHANNELS -1, 0.5, CHANNELS-0.5, "channel #");
+        efficiency_h = MakeH1("efficiency","efficiency", CHANNELS -1, 0.5, CHANNELS-0.5, "channel #;kind:F");
+            ((TH1F*) efficiency_h)->SetDrawOption("P0");
+            ((TH1F*) efficiency_h)->SetMarkerStyle(22);
+            ((TH1F*) efficiency_h)->GetXaxis()->SetNdivisions(55);
          
         coinc_matrix = MakeH2("coinc_matrix","coinc_matrix",12,-2.5,9.5,10,15-0.5,24+0.5, "channels 0-7;channels 16-23");
         //meta_fish = MakeH2("meta_fish","meta_fish",250,-300,200,200,-100,100, "T_A+T_B;T_B-T_A");
@@ -378,8 +381,8 @@ class SecondProc : public base::EventProc {
          
  
         
-        for (int i = 0 ; i<CHANNELS; i++) {
-            ((TH1F*) efficiency_h)->SetBinContent(i+1,((float) (((TH1F*) t1_h[i])->GetEntries()) )/((float) (((TH1F*) t1_h[0])->GetEntries())));
+        for (int i = 1 ; i<CHANNELS; i++) {
+            ((TH1F*) efficiency_h)->SetBinContent(i,((float) (((TH1F*) t1_h[i])->GetEntries()) )/((float) (((TH1F*) t1_h[0])->GetEntries())));
         }
         
         
