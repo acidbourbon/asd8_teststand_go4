@@ -29,15 +29,16 @@
 // #define tot_L -10
 // #define tot_R 500
 
+
 // Muentz-Torte
 //#define t1_L -300 // GSI Dlab
 //#define t1_R 300 // GSI Dlab
-#define t1_L -100 // EE
+#define t1_L -200 // EE
 #define t1_R 100 // EE
 //#define tot_L -10
 //#define tot_R 500
 #define tot_L -10 // EE
-#define tot_R 200 // EE
+#define tot_R 400 // EE
 
 // #define ref_channel_offset -75 //ns fine measured ref channel relative to coarse measured cts trigger channel
 #define ref_channel_offset 0 //ns fine measured ref channel relative to coarse measured cts trigger channel
@@ -56,7 +57,7 @@
 //#define spike_rejection 47 //ns for ASD8 thr 37000 with LASER
 // #define spike_rejection 90 //ns for PASTTREC pt20 with LASER
 //#define spike_rejection 90 //ns for PASTTREC pt20 with Fe55
-#define spike_rejection 30
+#define spike_rejection 10
 
 
 #define individual_spike_rejection 0
@@ -66,7 +67,7 @@
 
 //#define t1_accept_L (-250 + ref_channel_offset) //ns // GSI Dlab
 //#define t1_accept_L (-1000000 + ref_channel_offset) //ns // HZDR fe55
-#define t1_accept_L (-80 + ref_channel_offset) //ns // EE
+#define t1_accept_L (-150 + ref_channel_offset) //ns // EE
 //#define t1_accept_L (-150 + ref_channel_offset) //ns // Muentz-Torte
 //#define t1_accept_R (100 + ref_channel_offset)//ns // GSI Dlab
 //#define t1_accept_R (1000000 + ref_channel_offset)//ns // HZDR fe55
@@ -81,7 +82,7 @@
 // real cuts on selected data
 
 #define max_tot 10000 // Muentz-Torte
-#define t1_cut_L -100
+#define t1_cut_L -200
 #define t1_cut_R 100
 
 
@@ -357,8 +358,11 @@ class SecondProc : public base::EventProc {
                   
                   // fill histograms
                   FillH1(tot_h[i],tot[i]*1e9);
-                  FillH2(potato_h[i],t1_vs_ref ,tot[i]*1e9);
-                  FillH1(t1_h[i],t1_vs_ref );
+                  FillH2(potato_h[i],t1_vs_ref ,tot[i]*1e9); 
+		 // FillH1(t1_h[i],t1_vs_ref );  // without cuts
+                // if(t1_vs_ref < -30 && t1_vs_ref > -100) 			FillH1(t1_h[i],t1_vs_ref ); // with noise rejecting cuts
+		  if(t1_vs_ref < -30 && t1_vs_ref > -100 && tot[i]*1e9 > 60 ) 	FillH1(t1_h[i],t1_vs_ref ); // with noise rejecting cuts
+ 
                   
                   if( i != 0 ) {
                     FillH2(meta_potato_h,t1_vs_ref,tot[i]*1e9);
@@ -382,7 +386,8 @@ class SecondProc : public base::EventProc {
  
         
         for (int i = 1 ; i<CHANNELS; i++) {
-            ((TH1F*) efficiency_h)->SetBinContent(i,((float) (((TH1F*) t1_h[i])->GetEntries()) )/((float) (((TH1F*) t1_h[0])->GetEntries())));
+      //  ((TH1F*) efficiency_h)->SetBinContent(i,((float) (((TH1F*) t1_h[i])->GetEntries()) )/((float) (((TH1F*) t1_h[0])->GetEntries())));
+            ((TH1F*) efficiency_h)->SetBinContent(i,((float) (((TH1F*) t1_h[i])->Integral()) )/ 10000. ); // fixed numer of pulses sent for each channel 
         }
         
         
