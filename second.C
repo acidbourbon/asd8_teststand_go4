@@ -23,6 +23,7 @@
 #define REFCHAN_B 0
 
 #define VERBOSE 0
+#define TAKE_FIRST_HIT 0
 
 // #define t1_L -300
 // #define t1_R 300
@@ -33,8 +34,8 @@
 // Muentz-Torte
 //#define t1_L -300 // GSI Dlab
 //#define t1_R 300 // GSI Dlab
-#define t1_L -200 // EE
-#define t1_R 200 // EE
+#define t1_L -2000 // EE
+#define t1_R 2000 // EE
 //#define tot_L -10
 //#define tot_R 500
 #define tot_L -10 // EE
@@ -57,7 +58,7 @@
 //#define spike_rejection 47 //ns for ASD8 thr 37000 with LASER
 // #define spike_rejection 90 //ns for PASTTREC pt20 with LASER
 //#define spike_rejection 90 //ns for PASTTREC pt20 with Fe55
-#define spike_rejection 20
+#define spike_rejection 150
 
 
 #define individual_spike_rejection 0
@@ -67,11 +68,11 @@
 
 //#define t1_accept_L (-250 + ref_channel_offset) //ns // GSI Dlab
 //#define t1_accept_L (-1000000 + ref_channel_offset) //ns // HZDR fe55
-#define t1_accept_L (-1000 + ref_channel_offset) //ns // EE
+#define t1_accept_L (-2000 + ref_channel_offset) //ns // EE
 //#define t1_accept_L (-150 + ref_channel_offset) //ns // Muentz-Torte
 //#define t1_accept_R (100 + ref_channel_offset)//ns // GSI Dlab
 //#define t1_accept_R (1000000 + ref_channel_offset)//ns // HZDR fe55
-#define t1_accept_R (1000 + ref_channel_offset)//ns // EE
+#define t1_accept_R (300 + ref_channel_offset)//ns // EE
 // #define t1_accept_R (-130 + ref_channel_offset)//ns // Muentz-Torte
 // #define t1_accept_R (-90 + ref_channel_offset)//ns // ASD8 with thr 0x52
 
@@ -82,8 +83,8 @@
 // real cuts on selected data
 
 #define max_tot 1000000 // Muentz-Torte
-#define t1_cut_L -100
-#define t1_cut_R -60
+#define t1_cut_L -2000
+#define t1_cut_R 2000
 
 
 // #define coincidence_rejection 7
@@ -315,12 +316,13 @@ class SecondProc : public base::EventProc {
             if(rising){
               
               
+              if( !(TAKE_FIRST_HIT && got_real_hit[chid-1]) ){ // block subsequent hits if TAKE_FIRST_HIT setting is active
                 if((( ((tm)*1e9) > t1_accept_L) && (((tm)*1e9) < t1_accept_R ))  ) { // this condition sets another coincidence window, except for REFCHAN_A
                   got_rising[chid] = true;
                   got_falling[chid] = false;
                   t1_candidate[chid] = tm;
                 }
-//               }
+              }
             }else{ // if falling edge
 //               printf("got falling edge, ch %d\n",(chid));
               if(got_rising[chid]){

@@ -8,7 +8,14 @@ tdc=0x1130
 # set data limit
 trbcmd w $tdc 0xc804 100
 # set trigger windows -400 + 100
-trbcmd w $tdc 0xc801 0x80140050 
+# trbcmd w $tdc 0xc801 0x80140050 
+
+# set trigger windows -1000 + 100
+trbcmd w $tdc 0xc801 0x801400c8
+
+# set trigger windows -1000 + 1000
+trbcmd w $tdc 0xc801 0x80c800c8
+
 # enable relevant TDC channels
 trbcmd w $tdc 0xc802 0x00ffffffff
 #trbcmd w 0x1482 0xc802 0x00000000
