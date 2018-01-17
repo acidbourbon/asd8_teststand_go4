@@ -34,14 +34,14 @@
 //#define t1_L -300 // GSI Dlab
 //#define t1_R 300 // GSI Dlab
 #define t1_L -200 // EE
-#define t1_R 100 // EE
+#define t1_R 200 // EE
 //#define tot_L -10
 //#define tot_R 500
 #define tot_L -10 // EE
 #define tot_R 400 // EE
 
-// #define ref_channel_offset -75 //ns fine measured ref channel relative to coarse measured cts trigger channel
-#define ref_channel_offset 0 //ns fine measured ref channel relative to coarse measured cts trigger channel
+#define ref_channel_offset -75 //ns fine measured ref channel relative to coarse measured cts trigger channel
+//#define ref_channel_offset 0 //ns fine measured ref channel relative to coarse measured cts trigger channel
 
 // in the first iteration, scanning through data in the coincidence window, rejecting hits (fuzzy edges)
 
@@ -57,7 +57,7 @@
 //#define spike_rejection 47 //ns for ASD8 thr 37000 with LASER
 // #define spike_rejection 90 //ns for PASTTREC pt20 with LASER
 //#define spike_rejection 90 //ns for PASTTREC pt20 with Fe55
-#define spike_rejection 10
+#define spike_rejection 20
 
 
 #define individual_spike_rejection 0
@@ -67,11 +67,11 @@
 
 //#define t1_accept_L (-250 + ref_channel_offset) //ns // GSI Dlab
 //#define t1_accept_L (-1000000 + ref_channel_offset) //ns // HZDR fe55
-#define t1_accept_L (-150 + ref_channel_offset) //ns // EE
+#define t1_accept_L (-1000 + ref_channel_offset) //ns // EE
 //#define t1_accept_L (-150 + ref_channel_offset) //ns // Muentz-Torte
 //#define t1_accept_R (100 + ref_channel_offset)//ns // GSI Dlab
 //#define t1_accept_R (1000000 + ref_channel_offset)//ns // HZDR fe55
-#define t1_accept_R (-40 + ref_channel_offset)//ns // EE
+#define t1_accept_R (1000 + ref_channel_offset)//ns // EE
 // #define t1_accept_R (-130 + ref_channel_offset)//ns // Muentz-Torte
 // #define t1_accept_R (-90 + ref_channel_offset)//ns // ASD8 with thr 0x52
 
@@ -81,13 +81,13 @@
 
 // real cuts on selected data
 
-#define max_tot 10000 // Muentz-Torte
-#define t1_cut_L -200
-#define t1_cut_R 100
+#define max_tot 1000000 // Muentz-Torte
+#define t1_cut_L -100
+#define t1_cut_R -60
 
 
 // #define coincidence_rejection 7
-#define accept_hits_per_layer 2
+#define accept_hits_per_layer 20
 
 #define enable_coincidence_rejection 0
 
@@ -296,7 +296,7 @@ class SecondProc : public base::EventProc {
          for (unsigned cnt=0;cnt<sub->Size();cnt++) {
             const hadaq::TdcMessageExt& ext = sub->msg(cnt);
 
-            unsigned chid = ext.msg().getHitChannel();
+            unsigned chid = ( ext.msg().getHitChannel()  );
            bool rising   = ext.msg().isHitRisingEdge(); // use this line for rising edge first/positive pulses
             
             if (chid==0) {
@@ -359,9 +359,9 @@ class SecondProc : public base::EventProc {
                   // fill histograms
                   FillH1(tot_h[i],tot[i]*1e9);
                   FillH2(potato_h[i],t1_vs_ref ,tot[i]*1e9); 
-		 // FillH1(t1_h[i],t1_vs_ref );  // without cuts
-                // if(t1_vs_ref < -30 && t1_vs_ref > -100) 			FillH1(t1_h[i],t1_vs_ref ); // with noise rejecting cuts
-		  if(t1_vs_ref < -30 && t1_vs_ref > -100 && tot[i]*1e9 > 60 ) 	FillH1(t1_h[i],t1_vs_ref ); // with noise rejecting cuts
+                  FillH1(t1_h[i],t1_vs_ref ); // without cuts
+//                  if(t1_vs_ref < -200 && tot[i]*1e9 > 0 )	FillH1(t1_h[i],t1_vs_ref ); // with noise rejecting cuts
+		// if(  tot[i]*1e9 > 50 ) 	FillH1(t1_h[i],t1_vs_ref ); // with noise rejecting cuts
  
                   
                   if( i != 0 ) {
@@ -387,7 +387,8 @@ class SecondProc : public base::EventProc {
         
         for (int i = 1 ; i<CHANNELS; i++) {
       //  ((TH1F*) efficiency_h)->SetBinContent(i,((float) (((TH1F*) t1_h[i])->GetEntries()) )/((float) (((TH1F*) t1_h[0])->GetEntries())));
-            ((TH1F*) efficiency_h)->SetBinContent(i,((float) (((TH1F*) t1_h[i])->Integral()) )/ 10000. ); // fixed numer of pulses sent for each channel 
+          ((TH1F*) efficiency_h)->SetBinContent(i,((float) (((TH1F*) t1_h[i])->Integral()) )/ 1000. ); // fixed numer of pulses sent for each channel 
+       //   ((TH1F*) efficiency_h)->SetBinContent(i,((float) (((TH1F*) t1_h[i])->Integral()) )/((float) (((TH1F*) tot_h[i])->Integral())));   ; // normalize by number of signals in same channel without couts, as for almost each trigger a noise signal is measured
         }
         
         

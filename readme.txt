@@ -29,7 +29,7 @@ pulser)
 
 2. thresholds: 
 	open a screen, tmux or dedicated terminal and execute the following command:
-	while true; do ./set_asd8_thresh.sh 26000; sleep 2; done 
+	while true; do ./set_asd8_thresh.sh 32000; sleep 2; done 
 	(runs in a loop, continuously sets ASD8 thresholds)
 	already started in : screen -x asd8_thresh
 
